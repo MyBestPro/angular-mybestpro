@@ -1,0 +1,27 @@
+{
+  "name": "DevisPresto",
+  "version": "1.0.0",
+  "description": "A DevisPresto mobile application",
+  "main": "gulpfile.js",
+  "dependencies": {},
+  "devDependencies": {
+    "del": "~2.2.0",
+    "gulp": "~3.9.0",
+    "gulp-batch": "~1.0.5",
+    "gulp-concat": "~2.6.0",
+    "gulp-help": "~1.6.1",
+    "gulp-if": "^2.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "~2.1.0",
+    "gulp-sourcemaps": "~1.6.0",
+    "gulp-typescript": "^2.10.0",
+    "gulp-uglify": "^1.5.1",
+    "gulp-util": "^3.0.7",
+    "gulp-watch": "~4.3.5",
+    "merge-stream": "~1.0.0",
+    "tsd": "^0.6.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
