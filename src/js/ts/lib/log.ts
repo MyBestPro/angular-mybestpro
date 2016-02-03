@@ -72,27 +72,27 @@ module MyBestPro.lib
             }
         }
 
-        public debug() : void
+        public debug(...args: any[]) : void
         {
             this.message(this.LOG_DEBUG, arguments)
         }
 
-        public info() : void
+        public info(...args: any[]) : void
         {
             this.message(this.LOG_INFO, arguments)
         }
 
-        public error() : void
+        public error(...args: any[]) : void
         {
             this.message(this.LOG_ERROR, arguments)
         }
 
-        public log() : void
+        public log(...args: any[]) : void
         {
             this.message(this.LOG_LOG, arguments)
         }
 
-        public warn() : void
+        public warn(...args: any[]) : void
         {
             this.message(this.LOG_WARNING, arguments)
         }
