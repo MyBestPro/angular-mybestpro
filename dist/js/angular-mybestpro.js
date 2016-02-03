@@ -1,4 +1,4 @@
-angular.module('MyBestPro', []);
+angular.module('MyBestPro', ['indexedDB']);
 
 var MyBestPro;
 (function (MyBestPro) {
@@ -61,18 +61,38 @@ var MyBestPro;
                 };
             };
             Log.prototype.debug = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
                 this.message(this.LOG_DEBUG, arguments);
             };
             Log.prototype.info = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
                 this.message(this.LOG_INFO, arguments);
             };
             Log.prototype.error = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
                 this.message(this.LOG_ERROR, arguments);
             };
             Log.prototype.log = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
                 this.message(this.LOG_LOG, arguments);
             };
             Log.prototype.warn = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
                 this.message(this.LOG_WARNING, arguments);
             };
             Log.prototype.setLevel = function (level) {
@@ -127,6 +147,65 @@ var MyBestPro;
     })(lib = MyBestPro.lib || (MyBestPro.lib = {}));
 })(MyBestPro || (MyBestPro = {}));
 angular.module('MyBestPro').provider('MBPLog', MyBestPro.lib.Log);
+
+var MyBestPro;
+(function (MyBestPro) {
+    var lib;
+    (function (lib) {
+        var IndexedDB = (function () {
+            function IndexedDB($indexedDBProvider, MBPLogProvider) {
+                this.$indexedDBProvider = $indexedDBProvider;
+                this.MBPLogProvider = MBPLogProvider;
+                this.tables = {};
+                this.$get = [
+                    '$indexedDB',
+                    function ($indexedDB) {
+                        return $indexedDB;
+                    }
+                ];
+            }
+            IndexedDB.prototype.addTable = function (tableName, tableConfig) {
+                this.tables[tableName] = tableConfig;
+                this.MBPLogProvider.debug('MBPIndexedDB: Add table ' + tableName + ' with configuration - ', tableConfig);
+            };
+            IndexedDB.prototype.setDB = function (databaseName, databaseVersion) {
+                this.databaseName = databaseName;
+                this.databaseVersion = databaseVersion;
+                this.MBPLogProvider.debug('MBPIndexedDB: Set DB with ' + databaseName + ' version ' + databaseVersion);
+            };
+            IndexedDB.prototype.initDatabase = function () {
+                var that = this;
+                that
+                    .$indexedDBProvider
+                    .connection(that.databaseName)
+                    .upgradeDatabase(that.databaseVersion, function (event, db, tx) {
+                    that.MBPLogProvider.log('MBPIndexedDB: Start droping database ' + that.databaseName + ' ...');
+                    that.MBPLogProvider.debug('MBPIndecedDB: Tables to drop - ', db.objectStoreNames);
+                    angular.forEach(db.objectStoreNames, function (tableName) {
+                        that.MBPLogProvider.log('MBPIndexedDB: Delete table ' + tableName);
+                        db.deleteObjectStore(tableName);
+                    });
+                    that.MBPLogProvider.log('MBPIndexedDB: Start creating database ' + that.databaseName + ' ...');
+                    that.MBPLogProvider.debug('MBPIndecedDB: Tables to generate - ', that.tables);
+                    angular.forEach(that.tables, function (table, tableName) {
+                        that.MBPLogProvider.log('MBPIndexedDB: Start upgrading table ' + tableName);
+                        that.MBPLogProvider.debug('MBPIndexedDB: Table configuration - ', table);
+                        var objectStore = db.createObjectStore(tableName, { keyPath: table.keyPath });
+                        angular.forEach(table.columns, function (column, columnName) {
+                            that.MBPLogProvider.log('MBPIndexedDB: Start indexing table column ' + tableName + '.' + columnName);
+                            that.MBPLogProvider.debug('MBPIndexedDB: Column indexing configuration - ', column);
+                            objectStore.createIndex(columnName + '_idx', columnName, column);
+                        });
+                    });
+                });
+            };
+            IndexedDB.$inject = ['$indexedDBProvider', 'MBPLogProvider'];
+            return IndexedDB;
+        })();
+        lib.IndexedDB = IndexedDB;
+    })(lib = MyBestPro.lib || (MyBestPro.lib = {}));
+})(MyBestPro || (MyBestPro = {}));
+angular.module('MyBestPro').provider('MBPIndexedDB', MyBestPro.lib.IndexedDB);
 
 var MyBestPro;
 (function (MyBestPro) {

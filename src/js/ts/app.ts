@@ -1,1 +1,1 @@
-angular.module('MyBestPro', []);
+angular.module('MyBestPro', ['indexedDB']);
