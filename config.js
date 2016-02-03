@@ -21,8 +21,9 @@ module.exports = {
         ],
         "ts" : [
             "js/ts/*.ts",
-            "js/ts/app/controller/_base/**/*.ts",
-            "js/ts/**/*.ts"
+            "js/ts/lib/*.ts",
+            "js/ts/controller/*.ts",
+            "js/ts/component/*.ts"
         ],
         "js" : ["js/**/*.js"],
         "scss": ["css/scss/**/*.scss"],
