@@ -23,6 +23,7 @@ module.exports = {
             "js/ts/*.ts",
             "js/ts/lib/log.ts",
             "js/ts/lib/indexedDB.ts",
+            "js/ts/lib/notificationPush.ts",
             "js/ts/controller/*.ts",
             "js/ts/component/*.ts"
         ],

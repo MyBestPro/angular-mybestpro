@@ -10,6 +10,9 @@
         },
         "jquery/jquery.d.ts": {
             "commit": "c3ab375b371b7b4204adee3b1209baecd81cec02"
+        },
+        "phonegap-plugin-push/phonegap-plugin-push.d.ts": {
+            "commit": "e69fe60f2d6377ea4fae539493997b098f52cad1"
         }
     }
 }
