@@ -1,7 +1,7 @@
 {
-  "name": "DevisPresto",
+  "name": "angular-mybestpro",
   "version": "1.0.0",
-  "description": "A DevisPresto mobile application",
+  "description": "A MyBestPro angular packages",
   "main": "gulpfile.js",
   "dependencies": {},
   "devDependencies": {

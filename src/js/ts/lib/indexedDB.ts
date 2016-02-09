@@ -21,17 +21,19 @@ module MyBestPro.lib
             }
         ];
 
-        public addTable(tableName : string, tableConfig : any)
+        public addTable(tableName : string, tableConfig : any) : IndexedDB
         {
             this.tables[tableName] = tableConfig;
             this.MBPLogProvider.debug('MBPIndexedDB: Add table ' + tableName + ' with configuration - ', tableConfig);
+            return this;
         }
 
-        public setDB(databaseName : string, databaseVersion : number)
+        public setDB(databaseName : string, databaseVersion : number) : IndexedDB
         {
             this.databaseName = databaseName;
             this.databaseVersion = databaseVersion;
             this.MBPLogProvider.debug('MBPIndexedDB: Set DB with ' + databaseName + ' version ' + databaseVersion);
+            return this;
         }
 
         public initDatabase()
