@@ -167,11 +167,13 @@ var MyBestPro;
             IndexedDB.prototype.addTable = function (tableName, tableConfig) {
                 this.tables[tableName] = tableConfig;
                 this.MBPLogProvider.debug('MBPIndexedDB: Add table ' + tableName + ' with configuration - ', tableConfig);
+                return this;
             };
             IndexedDB.prototype.setDB = function (databaseName, databaseVersion) {
                 this.databaseName = databaseName;
                 this.databaseVersion = databaseVersion;
                 this.MBPLogProvider.debug('MBPIndexedDB: Set DB with ' + databaseName + ' version ' + databaseVersion);
+                return this;
             };
             IndexedDB.prototype.initDatabase = function () {
                 var that = this;
