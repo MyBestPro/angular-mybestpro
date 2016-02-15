@@ -16,10 +16,8 @@ module.exports = {
      * used for the build task.
      */
     "app_files": {
-        "typings": [
-            "js/typings/**/*.ts"
-        ],
-        "ts" : [
+        "js" : [
+            "js/typings/**/*.ts",
             "js/ts/*.ts",
             "js/ts/lib/log.ts",
             "js/ts/lib/indexedDB.ts",
@@ -27,12 +25,9 @@ module.exports = {
             "js/ts/controller/*.ts",
             "js/ts/component/*.ts"
         ],
-        "js" : ["js/**/*.js"],
-        "scss": ["css/scss/**/*.scss"],
-        "css": ["css/**.css", "css/**/*.css"],
         "fonts": ["font/**/*"],
         "images": ["img/**/*"],
         "html": ["html/**/*.html"],
         "index": ["index.html"]
-    },
-}
+    }
+};

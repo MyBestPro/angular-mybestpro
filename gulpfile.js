@@ -61,14 +61,12 @@ gulp.task('js:build',
     'Build main JS file (call "js:remove")',
     ['js:remove'],
     function () {
-        var typescriptFiles = prependPath(config.source_dir, config.app_files.ts.concat(config.app_files.typings)),
-            javascriptFiles = prependPath(config.source_dir, config.app_files.js),
-            allFiles = typescriptFiles.concat(javascriptFiles);
+        var javascriptFiles = prependPath(config.source_dir, config.app_files.js);
 
         gutil.log(gutil.colors.yellow('Path patterns for TS and JS files'));
-        dumpArray(allFiles);
+        dumpArray(javascriptFiles);
 
-        return gulp.src(allFiles)
+        return gulp.src(javascriptFiles)
             .pipe(sourcemaps.init())
             .pipe(gulpIf('*.ts', ts(tsProject)))
             .pipe(concat('angular-mybestpro.js'))
@@ -112,11 +110,8 @@ gulp.task('watch', 'Watch files modifications', [], function() {
     });
 
     // JS
-    var typescriptFiles = prependPath(config.source_dir, config.app_files.ts.concat(config.app_files.typings)),
-        javascriptFiles = prependPath(config.source_dir, config.app_files.js),
-        allJsFiles = typescriptFiles.concat(javascriptFiles);
-
-    watch(allJsFiles, function() {
+    var javascriptFiles = prependPath(config.source_dir, config.app_files.js);
+    watch(javascriptFiles, function() {
         gulp.start('js:build');
     });
 
