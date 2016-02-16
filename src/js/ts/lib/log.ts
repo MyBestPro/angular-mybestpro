@@ -1,33 +1,33 @@
-module MyBestPro.lib
-{
+namespace MyBestPro.lib {
 
-    export class Log implements ng.IServiceProvider
-    {
-        public static $inject = [];
+    'use strict';
 
-        public LOG_INACTIVE = -1;
+    export class Log implements ng.IServiceProvider {
+        public static $inject: Array<string> = [];
 
-        public LOG_ERROR = 0;
-        public LOG_WARNING = 1;
-        public LOG_INFO = 2;
-        public LOG_LOG = 3;
-        public LOG_DEBUG = 4;
+        public LOG_INACTIVE: number = -1;
 
-        private level = 3;
-        private displayMode = true;
-        private messages = [];
+        public LOG_ERROR: number = 0;
+        public LOG_WARNING: number = 1;
+        public LOG_INFO: number = 2;
+        public LOG_LOG: number = 3;
+        public LOG_DEBUG: number = 4;
 
-        private callbackReceivedLog : Function;
-        private callbackChangeStatus : Function;
+        private level: number = 3;
+        private displayMode: boolean = true;
+        private messages: Array<any> = [];
 
-        private consoles = {
+        private callbackReceivedLog: Function;
+        private callbackChangeStatus: Function;
+
+        private consoles: any = {
             0: console.error,
             1: console.warn,
             2: console.info,
             3: console.log,
             4: console.debug,
         };
-        private levels = {
+        private levels: any = {
             0: 'error',
             1: 'warning',
             2: 'info',
@@ -35,13 +35,7 @@ module MyBestPro.lib
             4: 'debug',
         };
 
-        constructor()
-        {
-
-        }
-
-        public $get(): any
-        {
+        public $get(): any {
             return {
                 LOG_INACTIVE: this.LOG_INACTIVE,
                 LOG_ERROR: this.LOG_ERROR,
@@ -68,97 +62,88 @@ module MyBestPro.lib
                 onReceivedLog: this.onReceivedLog,
                 onChangeStatus: this.onChangeStatus,
                 getHistory: this.getHistory,
-                getDisplayMode: this.getDisplayMode
-            }
+                getDisplayMode: this.getDisplayMode,
+            };
         }
 
-        public debug(...args: any[]) : void
-        {
-            this.message(this.LOG_DEBUG, arguments)
+        public debug(...args: any[]) : void {
+            this.message(this.LOG_DEBUG, arguments);
         }
 
-        public info(...args: any[]) : void
-        {
-            this.message(this.LOG_INFO, arguments)
+        public info(...args: any[]) : void {
+            this.message(this.LOG_INFO, arguments);
         }
 
-        public error(...args: any[]) : void
-        {
-            this.message(this.LOG_ERROR, arguments)
+        public error(...args: any[]) : void {
+            this.message(this.LOG_ERROR, arguments);
         }
 
-        public log(...args: any[]) : void
-        {
-            this.message(this.LOG_LOG, arguments)
+        public log(...args: any[]) : void {
+            this.message(this.LOG_LOG, arguments);
         }
 
-        public warn(...args: any[]) : void
-        {
-            this.message(this.LOG_WARNING, arguments)
+        public warn(...args: any[]) : void {
+            this.message(this.LOG_WARNING, arguments);
         }
 
-        public setLevel(level : number) : void
-        {
+        public setLevel(level: number) : void {
             this.level =  level;
         }
 
-        public setDisplayMode(enabled : boolean) : void
-        {
+        public setDisplayMode(enabled: boolean) : void {
             this.displayMode = enabled;
             if (this.callbackChangeStatus) {
                 this.callbackChangeStatus.apply(this, [enabled]);
             }
         }
 
-        public getDisplayMode() : boolean
-        {
+        public getDisplayMode() : boolean {
             return this.displayMode;
         }
 
-        public time(timerName : string, level : number = this.LOG_DEBUG) : void
-        {
+        public time(timerName: string, level: number = this.LOG_DEBUG) : void {
             if (level > this.level) {
                 return;
             }
             console.time(timerName);
         }
 
-        public timeEnd(timerName : string, level : number = this.LOG_DEBUG) : void
-        {
+        public timeEnd(
+            timerName: string,
+            level: number = this.LOG_DEBUG
+        ) : void {
             if (level > this.level) {
                 return;
             }
             console.timeEnd(timerName);
         }
 
-        private message(level : number, data : any) : void
-        {
+        public onReceivedLog(callbackReceivedLog: Function): void {
+            this.callbackReceivedLog = callbackReceivedLog;
+        }
+
+        public onChangeStatus(callbackChangeStatus: Function): void {
+            this.callbackChangeStatus = callbackChangeStatus;
+        }
+
+        public getHistory(): any {
+            return this.messages;
+        }
+
+        private message(level: number, data: any): void {
             if (level > this.level) {
                 return;
             }
             this.messages.push({ level: this.levels[level], data: data});
             this.consoles[level].apply(console, data);
             if (this.callbackReceivedLog) {
-                this.callbackReceivedLog.apply(this, [this.levels[level], data]);
+                this.callbackReceivedLog.apply(
+                    this,
+                    [this.levels[level], data]
+                );
             }
         }
-
-        public onReceivedLog(callbackReceivedLog : Function)
-        {
-            this.callbackReceivedLog = callbackReceivedLog;
-        }
-
-        public onChangeStatus(callbackChangeStatus : Function)
-        {
-            this.callbackChangeStatus = callbackChangeStatus;
-        }
-
-        public getHistory()
-        {
-            return this.messages;
-        }
     }
-
 }
 
 angular.module('MyBestPro').provider('MBPLog', MyBestPro.lib.Log);

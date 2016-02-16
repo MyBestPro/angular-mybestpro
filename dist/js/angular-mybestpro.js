@@ -4,6 +4,7 @@ var MyBestPro;
 (function (MyBestPro) {
     var lib;
     (function (lib) {
+        'use strict';
         var Log = (function () {
             function Log() {
                 this.LOG_INACTIVE = -1;
@@ -57,7 +58,7 @@ var MyBestPro;
                     onReceivedLog: this.onReceivedLog,
                     onChangeStatus: this.onChangeStatus,
                     getHistory: this.getHistory,
-                    getDisplayMode: this.getDisplayMode
+                    getDisplayMode: this.getDisplayMode,
                 };
             };
             Log.prototype.debug = function () {
@@ -121,6 +122,15 @@ var MyBestPro;
                 }
                 console.timeEnd(timerName);
             };
+            Log.prototype.onReceivedLog = function (callbackReceivedLog) {
+                this.callbackReceivedLog = callbackReceivedLog;
+            };
+            Log.prototype.onChangeStatus = function (callbackChangeStatus) {
+                this.callbackChangeStatus = callbackChangeStatus;
+            };
+            Log.prototype.getHistory = function () {
+                return this.messages;
+            };
             Log.prototype.message = function (level, data) {
                 if (level > this.level) {
                     return;
@@ -130,15 +140,6 @@ var MyBestPro;
                 if (this.callbackReceivedLog) {
                     this.callbackReceivedLog.apply(this, [this.levels[level], data]);
                 }
-            };
-            Log.prototype.onReceivedLog = function (callbackReceivedLog) {
-                this.callbackReceivedLog = callbackReceivedLog;
-            };
-            Log.prototype.onChangeStatus = function (callbackChangeStatus) {
-                this.callbackChangeStatus = callbackChangeStatus;
-            };
-            Log.prototype.getHistory = function () {
-                return this.messages;
             };
             Log.$inject = [];
             return Log;
@@ -152,56 +153,93 @@ var MyBestPro;
 (function (MyBestPro) {
     var lib;
     (function (lib) {
+        'use strict';
         var IndexedDB = (function () {
-            function IndexedDB($indexedDBProvider, MBPLogProvider) {
+            function IndexedDB($indexedDBProvider, log) {
                 this.$indexedDBProvider = $indexedDBProvider;
-                this.MBPLogProvider = MBPLogProvider;
+                this.log = log;
                 this.tables = {};
+                this.databaseName = '';
+                this.databaseVersion = 0;
+                this.logPrefix = 'MBPIndexedDB: ';
                 this.$get = [
                     '$indexedDB',
                     function ($indexedDB) {
                         return $indexedDB;
-                    }
+                    },
                 ];
             }
+            IndexedDB.prototype.traceDebug = function (message) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                this.log.debug(this.logPrefix + message);
+                if (arguments.length) {
+                    this.log.debug(arguments);
+                }
+            };
+            IndexedDB.prototype.traceInfo = function (message) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                this.log.info(this.logPrefix + message);
+                if (arguments.length) {
+                    this.log.info(arguments);
+                }
+            };
             IndexedDB.prototype.addTable = function (tableName, tableConfig) {
                 this.tables[tableName] = tableConfig;
-                this.MBPLogProvider.debug('MBPIndexedDB: Add table ' + tableName + ' with configuration - ', tableConfig);
+                this.traceDebug('Add table ' + tableName + ' with configuration', tableConfig);
                 return this;
             };
             IndexedDB.prototype.setDB = function (databaseName, databaseVersion) {
                 this.databaseName = databaseName;
                 this.databaseVersion = databaseVersion;
-                this.MBPLogProvider.debug('MBPIndexedDB: Set DB with ' + databaseName + ' version ' + databaseVersion);
+                this.traceDebug('Set DB with ' + databaseName + ' version ' + databaseVersion);
                 return this;
+            };
+            IndexedDB.prototype.upgradeDatabase = function (that, db) {
+                that.traceInfo('Start droping database ' + that.databaseName + ' ...');
+                that.traceDebug('Tables to drop - ', db.objectStoreNames);
+                angular.forEach(db.objectStoreNames, function (tableName) {
+                    that.traceInfo('Delete table ' + tableName);
+                    db.deleteObjectStore(tableName);
+                });
+                that.traceInfo('Start creating database ' + that.databaseName + ' ...');
+                that.traceDebug('Tables to generate - ', that.tables);
+                angular.forEach(that.tables, function (table, tableName) {
+                    that.upgradeTable(db, table, tableName);
+                });
+            };
+            IndexedDB.prototype.upgradeTable = function (db, table, tableName) {
+                var that = this;
+                var tableConfiguration = {
+                    keyPath: table.keyPath
+                };
+                that.traceInfo('Start upgrading table ' + tableName);
+                that.traceDebug('Table configuration - ', table);
+                var objectStore = db.createObjectStore(tableName, tableConfiguration);
+                angular.forEach(table.columns, function (column, columnName) {
+                    that.traceInfo('Start indexing table column ' +
+                        tableName + '.' + columnName);
+                    that.traceDebug('Column indexing configuration - ', column);
+                    objectStore.createIndex(columnName + '_idx', columnName, column);
+                });
             };
             IndexedDB.prototype.initDatabase = function () {
                 var that = this;
-                that
-                    .$indexedDBProvider
+                that.$indexedDBProvider
                     .connection(that.databaseName)
-                    .upgradeDatabase(that.databaseVersion, function (event, db, tx) {
-                    that.MBPLogProvider.log('MBPIndexedDB: Start droping database ' + that.databaseName + ' ...');
-                    that.MBPLogProvider.debug('MBPIndecedDB: Tables to drop - ', db.objectStoreNames);
-                    angular.forEach(db.objectStoreNames, function (tableName) {
-                        that.MBPLogProvider.log('MBPIndexedDB: Delete table ' + tableName);
-                        db.deleteObjectStore(tableName);
-                    });
-                    that.MBPLogProvider.log('MBPIndexedDB: Start creating database ' + that.databaseName + ' ...');
-                    that.MBPLogProvider.debug('MBPIndecedDB: Tables to generate - ', that.tables);
-                    angular.forEach(that.tables, function (table, tableName) {
-                        that.MBPLogProvider.log('MBPIndexedDB: Start upgrading table ' + tableName);
-                        that.MBPLogProvider.debug('MBPIndexedDB: Table configuration - ', table);
-                        var objectStore = db.createObjectStore(tableName, { keyPath: table.keyPath });
-                        angular.forEach(table.columns, function (column, columnName) {
-                            that.MBPLogProvider.log('MBPIndexedDB: Start indexing table column ' + tableName + '.' + columnName);
-                            that.MBPLogProvider.debug('MBPIndexedDB: Column indexing configuration - ', column);
-                            objectStore.createIndex(columnName + '_idx', columnName, column);
-                        });
-                    });
+                    .upgradeDatabase(this.databaseVersion, function (event, db, tx) {
+                    that.upgradeDatabase(that, db);
                 });
             };
-            IndexedDB.$inject = ['$indexedDBProvider', 'MBPLogProvider'];
+            IndexedDB.$inject = [
+                '$indexedDBProvider',
+                'MBPLogProvider',
+            ];
             return IndexedDB;
         })();
         lib.IndexedDB = IndexedDB;
@@ -213,9 +251,11 @@ var MyBestPro;
 (function (MyBestPro) {
     var lib;
     (function (lib) {
+        'use strict';
         var NotificationPush = (function () {
-            function NotificationPush(MBPLogProvider) {
-                this.MBPLogProvider = MBPLogProvider;
+            function NotificationPush(log) {
+                this.log = log;
+                this.logPrefix = 'MBPNotificationPush: ';
                 this.configurations = {
                     android: {
                         senderID: '',
@@ -225,7 +265,7 @@ var MyBestPro;
                         vibrate: true,
                         clearNotifications: true,
                         forceShow: false,
-                        topics: []
+                        topics: [],
                     },
                     ios: {
                         senderID: '',
@@ -235,31 +275,32 @@ var MyBestPro;
                         clearBadge: false,
                         gcmSandbox: false,
                         topics: [],
-                        categories: {}
+                        categories: {},
                     },
-                    windows: {}
+                    windows: {},
                 };
                 this.$get = [
                     '$window',
                     '$q',
                     'MBPLog',
-                    function ($window, $q, MBPLog) {
+                    function ($window, $q) {
                         return {
                             notification: null,
                             configurations: this.configurations,
                             /**
-                             * Note: like all plugins you must wait until you receive the deviceready event before calling init().
+                             * Note: like all plugins you must wait until you receive
+                             * the deviceready event before calling init().
                              * @returns {IPromise}
                              */
                             init: function () {
                                 var defer = $q.defer();
                                 if (typeof $window.cordova === 'undefined') {
                                     defer.reject('Environment not integrate cordova');
-                                    MBPLog.error('MBPNotificationPush: Environment not integrate cordova');
+                                    this.traceError('Environment not integrate cordova');
                                     return defer.promise;
                                 }
-                                MBPLog.log('MBPNotificationPush: Initialize notification push');
-                                MBPLog.debug('MBPNotificationPush: Using configuration - ', this.configurations);
+                                this.traceInfo('Initialize notification push');
+                                this.traceDebug('Using configuration - ', this.configurations);
                                 this.notification = PushNotification.init(this.configurations);
                                 defer.resolve(this);
                                 return defer.promise;
@@ -269,13 +310,14 @@ var MyBestPro;
                             },
                             hasPermission: function () {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return false;
                                 }
                                 return this.notification.hasPermission();
                             },
                             /**
-                             * The event registration will be triggered on each successful registration with the 3rd party push service.
+                             * The event registration will be triggered on each
+                             * successful registration with the 3rd party push service.
                              * @param callback
                              * @returns {NotificationPush}
                              */
@@ -284,7 +326,8 @@ var MyBestPro;
                                 return this;
                             },
                             /**
-                             * The event error will trigger when an internal error occurs and the cache is aborted.
+                             * The event error will trigger when an internal error
+                             * occurs and the cache is aborted.
                              * @param callback
                              * @returns {NotificationPush}
                              */
@@ -293,7 +336,9 @@ var MyBestPro;
                                 return this;
                             },
                             /**
-                             * The event notification will be triggered each time a push notification is received by a 3rd party push service on the device.
+                             * The event notification will be triggered each time a
+                             * push notification is received by a 3rd party push
+                             * service on the device.
                              * @param callback
                              * @returns {NotificationPush}
                              */
@@ -308,7 +353,7 @@ var MyBestPro;
                              */
                             on: function (eventName, callback) {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return this;
                                 }
                                 this.notification.on(eventName, callback);
@@ -322,18 +367,22 @@ var MyBestPro;
                              */
                             off: function (eventName, callback) {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return this;
                                 }
                                 this.notification.off(eventName, callback);
                                 return this;
                             },
                             /**
-                             * The unregister method is used when the application no longer wants to receive push notifications.
-                             * Beware that this cleans up all event handlers previously registered, so you will need to re-register
-                             * them if you want them to function again without an application reload.
+                             * The unregister method is used when the application no
+                             * longer wants to receive push notifications.
+                             * Beware that this cleans up all event handlers previously
+                             * registered, so you will need to re-register
+                             * them if you want them to function again without an
+                             * application reload.
                              *
-                             * If you provide a list of topics as an optional parameter then the application will unsubscribe from
+                             * If you provide a list of topics as an optional parameter
+                             * then the application will unsubscribe from
                              * these topics but continue to receive other push messages.
                              *
                              * @param successHandler
@@ -343,59 +392,92 @@ var MyBestPro;
                              */
                             unregister: function (successHandler, errorHandler, topics) {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return this;
                                 }
                                 this.notification.unregister(successHandler, errorHandler, topics);
                                 return this;
                             },
                             /**
-                             * Set the badge count visible when the app is not running (iOS only)
+                             * Set the badge count visible when the app is not running
+                             * (iOS only)
                              * @param successHandler
                              * @param errorHandler
                              * @param count
                              * @returns {NotificationPush}
                              */
-                            setApplicationIconBadgeNumber: function (successHandler, errorHandler, count) {
+                            setApplicationIconBadgenumber: function (successHandler, errorHandler, count) {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return this;
                                 }
-                                this.notification.setApplicationIconBadgeNumber(successHandler, errorHandler, count);
+                                this.notification.setApplicationIconBadgenumber(successHandler, errorHandler, count);
                                 return this;
                             },
                             /**
-                             * Get the current badge count visible when the app is not running (iOS only)
+                             * Get the current badge count visible when the app is not
+                             * running (iOS only)
                              * @param successHandler
                              * @param errorHandler
                              * @returns {NotificationPush}
                              */
-                            getApplicationIconBadgeNumber: function (successHandler, errorHandler) {
+                            getApplicationIconBadgenumber: function (successHandler, errorHandler) {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return this;
                                 }
-                                this.notification.getApplicationIconBadgeNumber(successHandler, errorHandler);
+                                this.notification.getApplicationIconBadgenumber(successHandler, errorHandler);
                                 return this;
                             },
                             /**
-                             * Tells the OS that you are done processing a background push notification. (iOS Only)
+                             * Tells the OS that you are done processing a background
+                             * push notification. (iOS Only)
                              * @param successHandler
                              * @param errorHandler
                              * @returns {NotificationPush}
                              */
                             finish: function (successHandler, errorHandler) {
                                 if (!this.hasInitialized()) {
-                                    MBPLog.error('MBPNotificationPush: You have not initialized notification push');
+                                    this.traceError('You have not initialized notification push');
                                     return this;
                                 }
                                 this.notification.finish(successHandler, errorHandler);
                                 return this;
-                            }
+                            },
                         };
-                    }
+                    },
                 ];
             }
+            NotificationPush.prototype.traceDebug = function (message) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                this.log.debug(this.logPrefix + message);
+                if (arguments.length) {
+                    this.log.debug(arguments);
+                }
+            };
+            NotificationPush.prototype.traceInfo = function (message) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                this.log.info(this.logPrefix + message);
+                if (arguments.length) {
+                    this.log.info(arguments);
+                }
+            };
+            NotificationPush.prototype.traceError = function (message) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                this.log.error(this.logPrefix + message);
+                if (arguments.length) {
+                    this.log.error(arguments);
+                }
+            };
             /**
              * Activate sound for all devices
              * @returns {NotificationPush}
@@ -547,7 +629,7 @@ var MyBestPro;
             };
             /**
              * Maps to the project number in the Google Developer Console.
-             * @param senderID : string
+             * @param senderID: string
              * @returns {NotificationPush}
              */
             NotificationPush.prototype.setAndroidId = function (senderID) {
@@ -555,10 +637,14 @@ var MyBestPro;
                 return this;
             };
             /**
-             * https://github.com/phonegap/phonegap-plugin-push/blob/master/docs/API.md#android
-             * http://developer.android.com/reference/android/graphics/Color.html#parseColor(java.lang.String)
-             * @param iconName : string - The name of a drawable resource to use as the small-icon. The name should not include the extension.
-             * @param iconBackgroundColor : string - Sets the background color of the small icon on Android 5.0 and greater.
+             * https://github.com/phonegap/phonegap-plugin-push/blob/master/docs/
+             * API.md#android
+             * http://developer.android.com/reference/android/graphics/Color.html
+             * #parseColor(java.lang.String)
+             * @param iconName: string - The name of a drawable resource to use as
+             * the small-icon. The name should not include the extension.
+             * @param iconBackgroundColor: string - Sets the background color of
+             * the small icon on Android 5.0 and greater.
              * @returns {NotificationPush}
              */
             NotificationPush.prototype.setAndroidIcon = function (iconName, iconBackgroundColor) {
@@ -566,7 +652,8 @@ var MyBestPro;
                 return this;
             };
             /**
-             * It plays the sound specified in the push data or the default system sound.
+             * It plays the sound specified in the push data or the default
+             * system sound.
              * @returns {NotificationPush}
              */
             NotificationPush.prototype.activateAndroidSound = function () {
@@ -574,7 +661,8 @@ var MyBestPro;
                 return this;
             };
             /**
-             * It not plays the sound specified in the push data or the default system sound.
+             * It not plays the sound specified in the push data or the default
+             * system sound.
              * @returns {NotificationPush}
              */
             NotificationPush.prototype.deactivateAndroidSound = function () {
@@ -614,7 +702,8 @@ var MyBestPro;
                 return this;
             };
             /**
-             * Will always show a notification, even when the app is on the foreground.
+             * Will always show a notification, even when the app is on the
+             * foreground.
              * @returns {NotificationPush}
              */
             NotificationPush.prototype.activateAndroidForceShow = function () {
@@ -622,7 +711,8 @@ var MyBestPro;
                 return this;
             };
             /**
-             * Will not always show a notification, even when the app is on the foreground.
+             * Will not always show a notification, even when the app is on the
+             * foreground.
              * @returns {NotificationPush}
              */
             NotificationPush.prototype.deactivateAndroidForceShow = function () {
@@ -670,26 +760,28 @@ var MyBestPro;
         lib.NotificationPush = NotificationPush;
     })(lib = MyBestPro.lib || (MyBestPro.lib = {}));
 })(MyBestPro || (MyBestPro = {}));
-angular.module('MyBestPro').provider('MBPNotificationPush', MyBestPro.lib.NotificationPush);
+angular.module('MyBestPro')
+    .provider('MBPNotificationPush', MyBestPro.lib.NotificationPush);
 
 var MyBestPro;
 (function (MyBestPro) {
     var controller;
     (function (controller) {
+        'use strict';
         var Log = (function () {
-            function Log($scope, MBPLog) {
+            function Log($scope, log) {
                 this.$scope = $scope;
-                this.MBPLog = MBPLog;
+                this.log = log;
                 this.$inject = ['$scope', 'MBPLog'];
-                $scope.displayMode = MBPLog.getDisplayMode();
-                $scope.messages = MBPLog.getHistory();
-                MBPLog.onReceivedLog(function (level, data) {
+                $scope.displayMode = log.getDisplayMode();
+                $scope.messages = log.getHistory();
+                log.onReceivedLog(function (level, data) {
                     $scope.messages.push({
                         level: level,
-                        data: JSON.stringify(data)
+                        data: JSON.stringify(data),
                     });
                 });
-                MBPLog.onChangeStatus(function (displayMode) {
+                log.onChangeStatus(function (displayMode) {
                     $scope.displayMode = displayMode;
                 });
             }
@@ -703,12 +795,18 @@ var MyBestPro;
 (function (MyBestPro) {
     var component;
     (function (component) {
+        'use strict';
         function Log() {
             return {
                 restrict: 'E',
                 scope: {},
-                template: '<ul><li ng-repeat="message in messages" ng-show="displayMode" class="mbp-log-{{ message.level }}"><strong ng-bind="message.level"></strong> {{ message.data }}</li>',
-                controller: MyBestPro.controller.Log
+                template: ['<ul>',
+                    '<li ng-repeat="message in messages" ',
+                    ' ng-show="displayMode" class="mbp-log-{{ message.level }}">',
+                    '<strong ng-bind="message.level"></strong>',
+                    ' {{ message.data }}</li>',
+                ].join(''),
+                controller: MyBestPro.controller.Log,
             };
         }
         component.Log = Log;
