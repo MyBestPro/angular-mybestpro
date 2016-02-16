@@ -13,6 +13,7 @@ var gutil      = require('gulp-util'),
     watch      = require('gulp-watch'),
     del        = require('del'),
     rename     = require('gulp-rename'),
+    exec       = require('exec'),
     concat     = require('gulp-concat'),
     sourcemaps = require('gulp-sourcemaps'),
     uglify     = require('gulp-uglify'),
@@ -78,6 +79,29 @@ gulp.task('js:build',
     }
 );
 
+gulp.task('js:build-dts',
+    'Generates a single .d.ts bundle containing external module declarations exported from TypeScript module files.',
+    [],
+    function(callback) {
+        exec([
+            'dts-generator',
+            '--name', 'angular-mybestpro',
+            '--project', '.',
+            '--exclude', 'dist/angular-mybestpro-d.ts',
+            '--exclude', 'src/js/typings/tss.d.ts',
+            '--exclude', 'src/js/typings/**/*.d.ts',
+            '--exclude', 'node_modules/**/*.d.ts',
+            '--out',
+            'dist/angular-mybestpro.d.ts'
+        ], function(err, stdout, stderr) {
+            console.log(stdout);
+            console.log(stderr);
+            console.log(err);
+            callback(err);
+        });
+    }
+);
+
 /**
  * Remove JS files built
  */
@@ -93,26 +117,18 @@ gulp.task('js:remove',
 /**
  * Task launched by default
  */
-gulp.task('default', 'Default tasks : "js:build" and then "watch"', ['js:build'], function() {
+gulp.task('default', 'Default tasks : "js:build", "js:build-dts" and then "watch"', ['js:build-dts', 'js:build'], function() {
     gulp.start('watch');
 });
 
-gulp.task('build', 'Build tasks :  "js:build"', ['js:build']);
+gulp.task('build', 'Build tasks : "js:build"  "js:build-dts"', ['js:build', 'js:build-dts']);
 
 gulp.task('watch', 'Watch files modifications', [], function() {
-    // HTML
-    var indexFile = prependPath(config.source_dir, config.app_files.index),
-        tplFiles  = prependPath(config.source_dir, config.app_files.html),
-        allHtmlFiles  = indexFile.concat(tplFiles);
-
-    watch(allHtmlFiles, function() {
-        gulp.start('html:build');
-    });
-
     // JS
     var javascriptFiles = prependPath(config.source_dir, config.app_files.js);
     watch(javascriptFiles, function() {
         gulp.start('js:build');
+        gulp.start('js:build-dts');
     });
 
     // CONFIG

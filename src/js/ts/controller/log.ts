@@ -2,15 +2,13 @@ namespace MyBestPro.controller  {
 
     'use strict';
 
-    export interface ILogScope extends ng.IScope {
-        displayMode: boolean;
-        messages: Array<any>;
-    }
-
     export class Log {
         public $inject: Array<string> = ['$scope', 'MBPLog'];
 
-        constructor (public $scope: ILogScope, private log: MyBestPro.lib.Log) {
+        constructor (
+            public $scope: MyBestPro.ILogScope,
+            private log: MyBestPro.lib.Log
+        ) {
             $scope.displayMode = log.getDisplayMode();
             $scope.messages = log.getHistory();
             log.onReceivedLog(

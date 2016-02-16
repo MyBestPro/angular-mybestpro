@@ -2,6 +2,11 @@ angular.module('MyBestPro', ['indexedDB']);
 
 var MyBestPro;
 (function (MyBestPro) {
+    'use strict';
+})(MyBestPro || (MyBestPro = {}));
+
+var MyBestPro;
+(function (MyBestPro) {
     var lib;
     (function (lib) {
         'use strict';
