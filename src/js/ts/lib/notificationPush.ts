@@ -47,6 +47,10 @@ namespace MyBestPro.lib {
                 $q: ng.IQService
             ): any {
                 return {
+                    log: this.log,
+                    traceDebug: this.traceDebug,
+                    traceInfo: this.traceInfo,
+                    traceError: this.traceError,
                     notification: null,
                     configurations: this.configurations,
                     /**

@@ -291,6 +291,10 @@ var MyBestPro;
                     'MBPLog',
                     function ($window, $q) {
                         return {
+                            log: this.log,
+                            traceDebug: this.traceDebug,
+                            traceInfo: this.traceInfo,
+                            traceError: this.traceError,
                             notification: null,
                             configurations: this.configurations,
                             /**

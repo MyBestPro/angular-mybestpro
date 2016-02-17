@@ -88,11 +88,10 @@ gulp.task('js:build-dts',
             '--name', 'angular-mybestpro',
             '--project', '.',
             '--exclude', 'dist/angular-mybestpro-d.ts',
-            '--exclude', 'src/js/typings/tss.d.ts',
+            '--exclude', 'src/js/typings/tsd.d.ts',
             '--exclude', 'src/js/typings/**/*.d.ts',
             '--exclude', 'node_modules/**/*.d.ts',
-            '--out',
-            'dist/angular-mybestpro.d.ts'
+            '--out', 'dist/angular-mybestpro.d.ts'
         ], function(err, stdout, stderr) {
             console.log(stdout);
             console.log(stderr);

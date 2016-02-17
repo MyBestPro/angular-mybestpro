@@ -94,7 +94,8 @@ namespace MyBestPro.lib {
         ): void {
             let that: MyBestPro.lib.IndexedDB = this;
             let tableConfiguration: any = {
-                keyPath: table.keyPath
+                keyPath: table.keyPath,
+                autoIncrement: table.autoIncrement || false,
             };
             that.traceInfo('Start upgrading table ' + tableName);
             that.traceDebug('Table configuration - ', table);
