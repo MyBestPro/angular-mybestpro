@@ -221,7 +221,8 @@ var MyBestPro;
             IndexedDB.prototype.upgradeTable = function (db, table, tableName) {
                 var that = this;
                 var tableConfiguration = {
-                    keyPath: table.keyPath
+                    keyPath: table.keyPath,
+                    autoIncrement: table.autoIncrement || false,
                 };
                 that.traceInfo('Start upgrading table ' + tableName);
                 that.traceDebug('Table configuration - ', table);
