@@ -180,8 +180,8 @@ var MyBestPro;
                     args[_i - 1] = arguments[_i];
                 }
                 this.log.debug(this.logPrefix + message);
-                if (arguments.length) {
-                    this.log.debug(arguments);
+                if (args.length) {
+                    this.log.debug(args);
                 }
             };
             IndexedDB.prototype.traceInfo = function (message) {
@@ -190,8 +190,8 @@ var MyBestPro;
                     args[_i - 1] = arguments[_i];
                 }
                 this.log.info(this.logPrefix + message);
-                if (arguments.length) {
-                    this.log.info(arguments);
+                if (args.length) {
+                    this.log.info(args);
                 }
             };
             IndexedDB.prototype.addTable = function (tableName, tableConfig) {
@@ -464,8 +464,8 @@ var MyBestPro;
                     args[_i - 1] = arguments[_i];
                 }
                 this.log.debug(this.logPrefix + message);
-                if (arguments.length) {
-                    this.log.debug(arguments);
+                if (args.length) {
+                    this.log.debug(args);
                 }
             };
             NotificationPush.prototype.traceInfo = function (message) {
@@ -474,8 +474,8 @@ var MyBestPro;
                     args[_i - 1] = arguments[_i];
                 }
                 this.log.info(this.logPrefix + message);
-                if (arguments.length) {
-                    this.log.info(arguments);
+                if (args.length) {
+                    this.log.info(args);
                 }
             };
             NotificationPush.prototype.traceError = function (message) {
@@ -484,8 +484,8 @@ var MyBestPro;
                     args[_i - 1] = arguments[_i];
                 }
                 this.log.error(this.logPrefix + message);
-                if (arguments.length) {
-                    this.log.error(arguments);
+                if (args.length) {
+                    this.log.error(args);
                 }
             };
             /**
