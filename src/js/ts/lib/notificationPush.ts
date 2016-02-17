@@ -272,22 +272,22 @@ namespace MyBestPro.lib {
 
         public traceDebug(message: string, ...args: any[]): void {
             this.log.debug(this.logPrefix + message);
-            if (arguments.length) {
-                this.log.debug(arguments);
+            if (args.length) {
+                this.log.debug(args);
             }
         }
 
         public traceInfo(message: string, ...args: any[]): void {
             this.log.info(this.logPrefix + message);
-            if (arguments.length) {
-                this.log.info(arguments);
+            if (args.length) {
+                this.log.info(args);
             }
         }
 
         public traceError(message: string, ...args: any[]): void {
             this.log.error(this.logPrefix + message);
-            if (arguments.length) {
-                this.log.error(arguments);
+            if (args.length) {
+                this.log.error(args);
             }
         }
 
