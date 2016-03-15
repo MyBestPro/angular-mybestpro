@@ -297,6 +297,7 @@ var MyBestPro;
                             traceError: this.traceError,
                             notification: null,
                             configurations: this.configurations,
+                            logPrefix: this.logPrefix,
                             /**
                              * Note: like all plugins you must wait until you receive
                              * the deviceready event before calling init().
